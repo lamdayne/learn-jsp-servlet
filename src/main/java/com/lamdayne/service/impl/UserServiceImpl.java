@@ -4,6 +4,7 @@ import com.lamdayne.dao.UserDAO;
 import com.lamdayne.dao.impl.UserDAOImpl;
 import com.lamdayne.model.User;
 import com.lamdayne.service.UserService;
+import com.lamdayne.util.PasswordUtil;
 import jakarta.inject.Inject;
 
 import java.util.Date;
@@ -15,13 +16,16 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User create(User entity) {
+        entity.setPasswordHash(PasswordUtil.hashPassword(entity.getPasswordHash()));
         entity.setCreateAt(new Date());
         return findOne(userDao.create(entity).getUserID());
     }
 
     @Override
-    public void update(User entity) {
+    public User update(User entity) {
+        entity.setPasswordHash(PasswordUtil.hashPassword(entity.getPasswordHash()));
         userDao.update(entity);
+        return this.findOne(entity.getUserID());
     }
 
     @Override

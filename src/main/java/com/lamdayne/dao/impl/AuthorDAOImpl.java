@@ -3,8 +3,11 @@ package com.lamdayne.dao.impl;
 import com.lamdayne.dao.AuthorDAO;
 import com.lamdayne.model.Author;
 import com.lamdayne.util.XJdbc;
-import com.lamdayne.util.XQuery;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AuthorDAOImpl implements AuthorDAO {
@@ -19,7 +22,8 @@ public class AuthorDAOImpl implements AuthorDAO {
         Object[] values = {
                 entity.getAuthorName()
         };
-        XJdbc.executeUpdate(createSql, values);
+        Long id = XJdbc.insert(createSql, values);
+        entity.setAuthorID(id);
         return entity;
     }
 
@@ -40,11 +44,40 @@ public class AuthorDAOImpl implements AuthorDAO {
 
     @Override
     public List<Author> findAll() {
-        return XQuery.getBeanList(Author.class, findAllSql);
+        List<Author> list = new ArrayList<>();
+        try (Connection conn = XJdbc.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(findAllSql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                Author author = new Author();
+                author.setAuthorID(rs.getLong("authorID"));
+                author.setAuthorName(rs.getString("authorName"));
+                author.setStatus(rs.getBoolean("status"));
+                list.add(author);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return list;
     }
 
     @Override
     public Author findById(Long authorID) {
-        return XQuery.getSingleBean(Author.class, findByIdSql, authorID);
+        Author author = null;
+        try (Connection conn = XJdbc.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(findByIdSql)) {
+            stmt.setLong(1, authorID);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    author = new Author();
+                    author.setAuthorID(rs.getLong("authorID"));
+                    author.setAuthorName(rs.getString("authorName"));
+                    author.setStatus(rs.getBoolean("status"));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return author;
     }
 }

@@ -4,7 +4,6 @@ package com.lamdayne.dao.impl;
 import com.lamdayne.dao.UserDAO;
 import com.lamdayne.model.User;
 import com.lamdayne.util.XJdbc;
-import com.lamdayne.util.XQuery;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -74,7 +73,7 @@ public class UserDAOImpl implements UserDAO {
                 list.add(user);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
         return list;
     }
@@ -100,7 +99,7 @@ public class UserDAOImpl implements UserDAO {
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
         return user;
     }

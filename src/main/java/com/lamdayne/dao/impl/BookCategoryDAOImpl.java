@@ -3,8 +3,11 @@ package com.lamdayne.dao.impl;
 import com.lamdayne.dao.BookCategoryDAO;
 import com.lamdayne.model.BookCategory;
 import com.lamdayne.util.XJdbc;
-import com.lamdayne.util.XQuery;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BookCategoryDAOImpl implements BookCategoryDAO {
@@ -26,7 +29,10 @@ public class BookCategoryDAOImpl implements BookCategoryDAO {
 
     @Override
     public void update(BookCategory entity) {
-
+        Object[] values = {
+                entity.getBookCategoryName()
+        };
+        XJdbc.executeUpdate(updateSql, values);
     }
 
     @Override
@@ -36,11 +42,38 @@ public class BookCategoryDAOImpl implements BookCategoryDAO {
 
     @Override
     public List<BookCategory> findAll() {
-        return XQuery.getBeanList(BookCategory.class, findAllSql);
+        List<BookCategory> list = new ArrayList<>();
+        try (Connection conn = XJdbc.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(findAllSql);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                BookCategory bookCategory = new BookCategory();
+                bookCategory.setBookCategoryID(rs.getLong("bookCategoryID"));
+                bookCategory.setBookCategoryName(rs.getString("bookCategoryName"));
+                list.add(bookCategory);
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return list;
     }
 
     @Override
     public BookCategory findById(Long bookCategoryID) {
-        return XQuery.getSingleBean(BookCategory.class, findByIdSql, bookCategoryID);
+        BookCategory bookCategory = null;
+        try (Connection conn = XJdbc.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(findByIdSql)) {
+            stmt.setLong(1, bookCategoryID);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    bookCategory = new BookCategory();
+                    bookCategory.setBookCategoryID(rs.getLong("bookCategoryID"));
+                    bookCategory.setBookCategoryName(rs.getString("bookCategoryName"));
+                }
+            }
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return bookCategory;
     }
 }
