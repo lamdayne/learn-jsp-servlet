@@ -22,6 +22,7 @@ public class Book {
     private Long stockQuantity;
     private Long createBy;
     private Date createAt;
-    private int modifyBy;
+    private Long modifyBy;
     private Date modifyAt;
+    private Boolean status;
 }
